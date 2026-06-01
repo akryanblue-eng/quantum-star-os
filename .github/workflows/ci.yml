@@ -1,0 +1,23 @@
+name: Quantum Star OS CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify Structure
+        run: |
+          ls -R architecture systems products media lore automation labs docs
+      - name: Dry Run Automation
+        run: |
+          if [ -f automation/init.sh ]; then
+            bash automation/init.sh --dry-run
+          else
+            echo "No automation script found yet."
+          fi
