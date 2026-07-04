@@ -20,3 +20,4 @@ certificates, market scores).
 - [docs/GENESIS.md](docs/GENESIS.md) — Genesis, prediction chaining, and certificate lineage
 - [docs/CERTIFICATE.md](docs/CERTIFICATE.md) — ExecutionCertificate v0.1 manifest schema and verification modes
 - [docs/STORAGE.md](docs/STORAGE.md) — log-first storage: append-only certificate log as source of truth
+- [docs/ROADMAP.md](docs/ROADMAP.md) — locked rules, reality gates, and parked specifications
