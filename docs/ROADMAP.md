@@ -47,8 +47,9 @@ codec hardened with UTF-8 bytewise ordering, NFC normalization, and
 non-plain-object tripwires; deterministic map backing VM state) and the
 cross-machine protocol (docs/CROSS_MACHINE_PROTOCOL.md) are in place; a
 golden vector is committed and replays byte-identically across process
-boundaries locally. Remaining: `scripts/verify_replay.sh` on a second
-real machine / OS / Node version, and a long-chain (10³+ epochs) soak.
+boundaries, clean clones, and four Node/V8 generations (18/20/22/24 —
+see CROSS_MACHINE_PROTOCOL.md results). Remaining: a second physical
+machine (different OS/CPU arch), and a long-chain (10³+ epochs) soak.
 
 Gate 3 — **A model population.** The Market today has exactly one
 implicit participant: the chain predictor (yesterday's root predicts

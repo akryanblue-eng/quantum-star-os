@@ -75,11 +75,34 @@ produced on: `node v22.22.2, linux/x64`. It serves two purposes:
   gains such capabilities — building them now would harden doors that
   do not exist.
 
+## Results so far
+
+The vector was produced on node v22.22.2, linux/x64. Verified replays,
+all four checks PASS, byte-for-byte:
+
+| Environment | Node / V8 | Checkout | Result |
+| --- | --- | --- | --- |
+| producer machine, fresh process | v22.22.2 / V8 12.4 | working tree | REPLAY OK |
+| fresh `git clone` + `npm install` + `npm test` | v22.22.2 / V8 12.4 | clean clone | REPLAY OK |
+| fresh clone | v18.20.8 / V8 10.2 | clean clone | REPLAY OK |
+| fresh clone | v20.20.2 / V8 11.3 | clean clone | REPLAY OK |
+| fresh clone | v24.18.0 / V8 13.6 | clean clone | REPLAY OK |
+
+The runtime matrix spans four V8 generations and the ICU/Unicode data
+shipped across Node 18→24; the vector's decomposed-Unicode fixtures
+exercise NFC normalization under each. Failure paths are verified too:
+a tampered plan is rejected at ingestion with a reported verdict, and a
+tampered trace byte is localized ("epoch 1: trace event 1 diverges
+first") by the first-divergence locator.
+
 ## Status
 
 - [x] Same machine, same process (run-twice, in test suite)
-- [x] Same machine, separate processes via disk round-trip (this
-  protocol, local)
-- [ ] Second real machine / OS / Node version — **run
-  `scripts/verify_replay.sh` on any other computer; this is the next
-  action and it is one command**
+- [x] Same machine, separate processes via disk round-trip
+- [x] Clean-clone integrity (fresh `git clone`, fresh installs)
+- [x] Runtime invariance: Node 18 / 20 / 22 / 24 (V8 10.2 → 13.6)
+- [ ] Second physical machine / different OS / different CPU arch —
+  **run `scripts/verify_replay.sh` on any other computer; one command.**
+  All runs above share one Linux x64 container, so OS/arch variance is
+  still unproven; an arm64 machine (e.g. Apple Silicon) is the most
+  valuable next data point.
