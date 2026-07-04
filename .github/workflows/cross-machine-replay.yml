@@ -1,0 +1,56 @@
+name: cross-machine-replay
+
+# The physical half of docs/CROSS_MACHINE_PROTOCOL.md: produce the
+# reference chain twice on real hardware, hash against the committed
+# x86-produced golden vector, then run full replay verification.
+# macos-latest = Apple Silicon (arm64, macOS kernel, Apple libc);
+# ubuntu-latest = x64 Linux control.
+
+on:
+  push:
+    branches: [claude/architecture-brain-kernel-ctrbg2]
+  workflow_dispatch:
+
+jobs:
+  replay:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Environment snapshot
+        run: |
+          uname -a
+          node -p "process.arch + ' ' + process.version + ' ' + process.platform + ' icu=' + process.versions.icu + ' v8=' + process.versions.v8"
+
+      - name: Produce bundle twice (independent processes)
+        run: |
+          ./scripts/run_epoch.sh "$RUNNER_TEMP/runA"
+          ./scripts/run_epoch.sh "$RUNNER_TEMP/runB"
+
+      - name: Hash comparison vs committed golden vector
+        run: |
+          node -e '
+            const { createHash } = require("crypto");
+            const { readFileSync } = require("fs");
+            const files = [
+              process.env.RUNNER_TEMP + "/runA/bundle.cjson",
+              process.env.RUNNER_TEMP + "/runB/bundle.cjson",
+              "systems/causal-kernel/vectors/genesis-chain-v1/bundle.cjson",
+            ];
+            const lines = files.map((p) =>
+              createHash("sha256").update(readFileSync(p)).digest("hex") + "  " + p
+            );
+            lines.forEach((l) => console.log(l));
+            if (new Set(lines.map((l) => l.split("  ")[0])).size !== 1) {
+              console.log("HASH MISMATCH");
+              process.exit(1);
+            }
+            console.log("ALL HASHES IDENTICAL");
+          '
+
+      - name: Verify replay against golden vector
+        run: ./scripts/verify_replay.sh
