@@ -1,8 +1,9 @@
 # Genesis & Epoch Prediction Specification
 
-This document specifies epoch 0 (Genesis) and the prediction rule that
-links every subsequent epoch to its predecessor. It is the normative
-reference for `systems/causal-kernel/src/epoch/prediction.ts`.
+This document specifies epoch 0 (Genesis), the prediction rule that links
+every subsequent epoch to its predecessor, and the certificate lineage
+rule. It is the normative reference for
+`systems/causal-kernel/src/epoch/prediction.ts`.
 
 ## State roots
 
@@ -58,6 +59,22 @@ replayable — the prediction for epoch *n* is derivable from the epoch
 - Epoch 0's certificate is the root of the certificate chain: every later
   certificate is transitively bound to it through the prediction rule.
 
+## Certificate lineage
+
+Orthogonal to the prediction chain, certificates carry an integrity
+chain (see [CERTIFICATE.md](./CERTIFICATE.md) for digest definitions):
+
+```
+previousExecutionDigest(0) = ZERO_DIGEST
+previousExecutionDigest(n) = executionDigest(n − 1)     for n ≥ 1
+```
+
+The prediction chain answers *did the system evolve causally?*; the
+lineage chain answers *is the recorded history intact?* They detect
+different failures — a prediction mismatch means the Brain's planning
+diverged from the Kernel's output; a digest mismatch means corruption or
+tampering — and neither replaces the other.
+
 ## Market scoring
 
 For each epoch the Market receives the pair:
@@ -76,6 +93,7 @@ Any replay of epochs `0..n` must reproduce, byte-for-byte:
 
 1. every `finalStateRoot(k)` for `k ≤ n`;
 2. every `prediction(k)` (which follows from 1 and the chaining rule);
-3. every certificate and market score derived from them.
+3. every `executionDigest(k)` and therefore the whole lineage chain;
+4. every certificate, trace root, and market score derived from them.
 
 A replay that diverges in any of these is a kernel defect by definition.

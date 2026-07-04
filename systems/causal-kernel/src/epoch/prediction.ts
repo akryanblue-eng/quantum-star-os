@@ -36,9 +36,9 @@ export function verifyPredictionChain(
   certificates: ExecutionCertificate[]
 ): void {
   certificates.forEach((cert, i) => {
-    if (cert.epoch !== i) {
+    if (cert.epochNumber !== i) {
       throw new Error(
-        `Certificate at position ${i} has epoch ${cert.epoch}; chain must start at Genesis and be contiguous`
+        `Certificate at position ${i} has epoch ${cert.epochNumber}; chain must start at Genesis and be contiguous`
       );
     }
     const expected = predictionFor(

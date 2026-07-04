@@ -1,6 +1,11 @@
 import { strict as assert } from "assert";
 import { ZERO_ROOT, StateRoot } from "../contracts/execution_plan";
-import { ExecutionCertificate } from "../contracts/certificate";
+import {
+  CERT_VERSION,
+  ExecutionCertificate,
+  ZERO_DIGEST,
+  sealCertificate,
+} from "../contracts/certificate";
 import { predictionFor, verifyPredictionChain } from "./prediction";
 
 const rootA = ("0x" + "aa".repeat(32)) as StateRoot;
@@ -18,17 +23,25 @@ assert.throws(() => predictionFor(-1, null));
 assert.throws(() => predictionFor(1.5, rootA));
 
 const cert = (
-  epoch: number,
+  epochNumber: number,
   predictedStateRoot: StateRoot,
   finalStateRoot: StateRoot
-): ExecutionCertificate => ({
-  epoch,
-  planHashes: [],
-  traceHash: ("0x" + "00".repeat(32)) as `0x${string}`,
-  predictedStateRoot,
-  finalStateRoot,
-  marketScore: 0,
-});
+): ExecutionCertificate =>
+  sealCertificate({
+    certVersion: CERT_VERSION,
+    epochNumber,
+    previousExecutionDigest: ZERO_DIGEST,
+    executionPlanDigest: ZERO_DIGEST,
+    traceRoot: ZERO_DIGEST,
+    predictedStateRoot,
+    finalStateRoot,
+    marketRoot: ZERO_DIGEST,
+    marketSnapshotDigest: ZERO_DIGEST,
+    vmConfigHash: ZERO_DIGEST,
+    kernelVersion: "test",
+    frameCount: 0,
+    tickCount: 0,
+  });
 
 // A well-formed chain: 0 predicts zero root, n predicts n−1's final root.
 verifyPredictionChain([

@@ -1,3 +1,5 @@
+import { Hex32, digestOf } from "../codec/canonical";
+
 // The Brain → Kernel boundary. An ExecutionPlan is the ONLY input the
 // Causal Kernel accepts. Every field must be a concrete value: all
 // nondeterminism (LLM sampling, wall-clock time, external lookups) is
@@ -21,7 +23,14 @@ export type ExecutionPlan = {
   sourceJobId: string;
   epoch: number;
   steps: PlanStep[];
-  // Hash of the canonical serialization of this plan, so certificates can
-  // bind to the plan without embedding it.
-  planHash: `0x${string}`;
+  // Hash of the canonical serialization of this plan (all fields except
+  // planHash itself), so certificates can bind to the plan without
+  // embedding it.
+  planHash: Hex32;
 };
+
+export type PlanBody = Omit<ExecutionPlan, "planHash">;
+
+export function planHashOf(body: PlanBody): Hex32 {
+  return digestOf(body);
+}

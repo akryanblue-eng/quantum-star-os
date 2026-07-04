@@ -112,6 +112,38 @@ The Kernel is tested by **replay**: run an epoch twice, byte-compare the
 trace, certificate, and market outputs. Keeping nondeterminism on the Brain
 side of the ExecutionPlan boundary is what makes that test possible.
 
+### Execution is separate from verification
+
+Within the kernel, the EpochRunner executes and the Verifier proves —
+they never share a process boundary obligation:
+
+```
+EpochRunner
+    ↓
+Artifacts  (plans, trace, market snapshot, certificate)
+    ↓
+Verifier
+    ↓
+Acceptance Report
+```
+
+The Verifier consumes only artifacts, so records produced months earlier
+can be checked without rerunning the VM. It offers two assurance levels —
+a fast O(epochs) digest/lineage/prediction walk, and a full replay that
+re-executes from Genesis and demands byte-for-byte artifact equality. See
+[CERTIFICATE.md](./CERTIFICATE.md). Certificates are persisted in an
+append-only log that is the sole source of truth; see
+[STORAGE.md](./STORAGE.md).
+
+### Milestone discipline: stability before adaptation
+
+The system is not evolutionary until replay is perfect. The build order
+is: EpochRunner → trace → trace root → market snapshot → market root →
+execution certificate → replay verifier → run twice → byte-for-byte
+artifact comparison — and **only then** mutation/speciation. Adaptive
+behavior added before the substrate is byte-stable makes it impossible to
+tell whether a mutation improved the system or broke the logic.
+
 ## Epoch prediction chaining
 
 The Market measures how well the system predicts its own next state. The
