@@ -1,0 +1,13 @@
+{
+  "name": "causal-kernel",
+  "version": "0.1.0",
+  "description": "Deterministic execution, trace, and proof layer of Quantum Star OS",
+  "main": "index.js",
+  "scripts": {
+    "test": "ts-node src/epoch/prediction.test.ts"
+  },
+  "dependencies": {
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.4"
+  }
+}
