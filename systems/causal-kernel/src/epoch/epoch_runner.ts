@@ -10,6 +10,7 @@ import {
   KernelState,
   VM_CONFIG_HASH,
   applyStep,
+  newKernelState,
   stateRootOf,
 } from "../vm/vm";
 import { Trace, TraceEvent, traceRootOf } from "../trace/trace";
@@ -61,7 +62,9 @@ export function runEpoch(
     prevCert ? prevCert.finalStateRoot : null
   );
 
-  const state: KernelState = new Map(previous ? previous.state : []);
+  const state: KernelState = previous
+    ? previous.state.clone()
+    : newKernelState();
   const startStateRoot = stateRootOf(state);
   if (prevCert && startStateRoot !== prevCert.finalStateRoot) {
     throw new Error(

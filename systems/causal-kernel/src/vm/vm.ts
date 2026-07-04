@@ -1,9 +1,12 @@
 import { PlanStep, StateRoot, ZERO_ROOT } from "../contracts/execution_plan";
 import { Hex32, digestOf } from "../codec/canonical";
+import { DeterministicMap } from "../cel/deterministic_map";
 
-// The deterministic state machine. State is a flat string→string map; the
-// state root is a digest over its sorted entries. No clock, no network,
-// no randomness — a step's effect is a pure function of (state, step).
+// The deterministic state machine. State is a flat string→string map with
+// CEL-guaranteed iteration order (UTF-8 bytewise sorted keys — native Map
+// is banned from kernel paths); the state root is a digest over its
+// sorted entries. No clock, no network, no randomness — a step's effect
+// is a pure function of (state, step).
 
 // The VM's semantics, committed into every certificate as vmConfigHash: a
 // replay is only valid against the exact VM that produced the artifacts.
@@ -13,7 +16,11 @@ export const VM_CONFIG = {
 };
 export const VM_CONFIG_HASH: Hex32 = digestOf(VM_CONFIG);
 
-export type KernelState = Map<string, string>;
+export type KernelState = DeterministicMap<string>;
+
+export function newKernelState(): KernelState {
+  return new DeterministicMap<string>();
+}
 
 export function stateRootOf(state: KernelState): StateRoot {
   // The empty state commits to ZERO_ROOT so that Genesis's prediction,
@@ -22,10 +29,7 @@ export function stateRootOf(state: KernelState): StateRoot {
   if (state.size === 0) {
     return ZERO_ROOT;
   }
-  const entries = [...state.entries()].sort(([a], [b]) =>
-    a < b ? -1 : a > b ? 1 : 0
-  );
-  return digestOf(entries) as StateRoot;
+  return digestOf(state.entries()) as StateRoot;
 }
 
 export function applyStep(state: KernelState, step: PlanStep): void {

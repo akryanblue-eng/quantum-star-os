@@ -30,10 +30,15 @@ export function compileExecutionPlan(
   plan: BrainActionPlan,
   epoch: number
 ): ExecutionPlan {
+  // CEL boundary rule: Brain strings are NFC-normalized here, so that
+  // in-memory plans are byte-identical to their canonical serialization
+  // and no Unicode composition variance ever reaches kernel state.
+  const nfc = (s: string) => s.normalize("NFC");
+  const jobId = nfc(plan.jobId);
   const steps: PlanStep[] = [];
   const push = (op: string, args: Record<string, string>) =>
     steps.push({ index: steps.length, op, args });
-  const base = `job/${plan.jobId}`;
+  const base = `job/${jobId}`;
 
   push("set", { key: `${base}/strategy`, value: plan.strategy });
   // Floats are banned from canonical form; confidence crosses the
@@ -46,27 +51,27 @@ export function compileExecutionPlan(
   switch (plan.strategy) {
     case "execute":
       plan.actions.forEach((action, i) =>
-        push("set", { key: `${base}/action/${i}`, value: action })
+        push("set", { key: `${base}/action/${i}`, value: nfc(action) })
       );
       push("set", { key: `${base}/status`, value: "executed" });
       break;
     case "refine":
       push("set", { key: `${base}/status`, value: "refining" });
-      push("set", { key: `${base}/refine_reason`, value: plan.notes });
+      push("set", { key: `${base}/refine_reason`, value: nfc(plan.notes) });
       break;
     case "hold":
       push("set", { key: `${base}/status`, value: "held" });
       break;
     case "escalate":
       push("set", { key: `${base}/status`, value: "escalated" });
-      push("set", { key: `${base}/escalation_note`, value: plan.notes });
+      push("set", { key: `${base}/escalation_note`, value: nfc(plan.notes) });
       break;
   }
 
   const body: PlanBody = {
     // Deterministic identity — no timestamps, no UUIDs.
-    planId: `${plan.jobId}@${epoch}`,
-    sourceJobId: plan.jobId,
+    planId: `${jobId}@${epoch}`,
+    sourceJobId: jobId,
     epoch,
     steps,
   };
