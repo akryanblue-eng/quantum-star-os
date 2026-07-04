@@ -87,6 +87,7 @@ all four checks PASS, byte-for-byte:
 | fresh clone | v18.20.8 / V8 10.2 | clean clone | REPLAY OK |
 | fresh clone | v20.20.2 / V8 11.3 | clean clone | REPLAY OK |
 | fresh clone | v24.18.0 / V8 13.6 | clean clone | REPLAY OK |
+| **arm64** (official linux-arm64 Node under QEMU user-mode emulation) | v22.22.2 / V8 12.4, arm64 codegen | clean clone, tsc-compiled JS | REPLAY OK — bundles produced twice on arm64 are sha256-identical to the x86 golden vector |
 
 The runtime matrix spans four V8 generations and the ICU/Unicode data
 shipped across Node 18→24; the vector's decomposed-Unicode fixtures
@@ -101,8 +102,13 @@ first") by the first-divergence locator.
 - [x] Same machine, separate processes via disk round-trip
 - [x] Clean-clone integrity (fresh `git clone`, fresh installs)
 - [x] Runtime invariance: Node 18 / 20 / 22 / 24 (V8 10.2 → 13.6)
-- [ ] Second physical machine / different OS / different CPU arch —
-  **run `scripts/verify_replay.sh` on any other computer; one command.**
-  All runs above share one Linux x64 container, so OS/arch variance is
-  still unproven; an arm64 machine (e.g. Apple Silicon) is the most
-  valuable next data point.
+- [x] Instruction-set invariance (emulated): official arm64 Node
+  executing arm64 machine code under QEMU user-mode emulation produced
+  byte-identical bundles and verified the x86 vector. Caveat: QEMU
+  models arm64 instruction semantics on x86 silicon — a faithful proxy
+  for this kernel (integer-only, float-free, I/O-free), but not real
+  ARM hardware, and the OS kernel/filesystem/libc remain shared.
+- [ ] Second physical machine — **`scripts/verify_replay.sh` on real
+  hardware (Apple Silicon ideal: real ARM silicon + different OS +
+  different libc in one test); one command.** This is the last
+  unmeasured axis.
