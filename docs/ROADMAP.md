@@ -42,14 +42,14 @@ pattern-matches action strings; no production job has flowed end-to-end.
 Until real jobs run through understanding → decision → compiled plan →
 epoch, every downstream signal is synthetic.
 
-Gate 2 — **Cross-environment replay.** In progress. The CEL (canonical
-codec hardened with UTF-8 bytewise ordering, NFC normalization, and
-non-plain-object tripwires; deterministic map backing VM state) and the
-cross-machine protocol (docs/CROSS_MACHINE_PROTOCOL.md) are in place; a
-golden vector is committed and replays byte-identically across process
-boundaries, clean clones, and four Node/V8 generations (18/20/22/24 —
-see CROSS_MACHINE_PROTOCOL.md results). Remaining: a second physical
-machine (different OS/CPU arch), and a long-chain (10³+ epochs) soak.
+Gate 2 — **Cross-environment replay. Substantially closed.** The golden
+vector replays byte-identically across process boundaries, clean
+clones, four Node/V8 generations (18/20/22/24), QEMU-emulated arm64,
+and — decisively — real hardware: GitHub Actions Apple Silicon (Darwin
+ARM64, Apple libc, APFS) and x64 Ubuntu runners both reproduce the
+vector exactly (docs/CROSS_MACHINE_PROTOCOL.md results table). The
+replay workflow runs on every push as a standing drift gate. Remaining:
+a long-chain (10³+ epochs) soak.
 
 Gate 3 — **A model population.** The Market today has exactly one
 implicit participant: the chain predictor (yesterday's root predicts

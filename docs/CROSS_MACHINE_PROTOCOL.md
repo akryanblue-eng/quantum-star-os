@@ -88,6 +88,8 @@ all four checks PASS, byte-for-byte:
 | fresh clone | v20.20.2 / V8 11.3 | clean clone | REPLAY OK |
 | fresh clone | v24.18.0 / V8 13.6 | clean clone | REPLAY OK |
 | **arm64** (official linux-arm64 Node under QEMU user-mode emulation) | v22.22.2 / V8 12.4, arm64 codegen | clean clone, tsc-compiled JS | REPLAY OK — bundles produced twice on arm64 are sha256-identical to the x86 golden vector |
+| **Apple Silicon — real hardware** (GitHub Actions `macos-latest`: Darwin 25.4 ARM64, Apple libc, APFS) | v24.18.0 / V8 13.6, native arm64 | fresh CI checkout | REPLAY OK — two production runs sha256-identical to the x86 golden vector; all four checks PASS |
+| x64 Ubuntu (GitHub Actions `ubuntu-latest`, control) | v24.x | fresh CI checkout | REPLAY OK |
 
 The runtime matrix spans four V8 generations and the ICU/Unicode data
 shipped across Node 18→24; the vector's decomposed-Unicode fixtures
@@ -108,7 +110,11 @@ first") by the first-divergence locator.
   models arm64 instruction semantics on x86 silicon — a faithful proxy
   for this kernel (integer-only, float-free, I/O-free), but not real
   ARM hardware, and the OS kernel/filesystem/libc remain shared.
-- [ ] Second physical machine — **`scripts/verify_replay.sh` on real
-  hardware (Apple Silicon ideal: real ARM silicon + different OS +
-  different libc in one test); one command.** This is the last
-  unmeasured axis.
+- [x] **Second physical machine: CLOSED.** GitHub Actions
+  `macos-latest` — real Apple M-series silicon (macOS ARM64 VM), Darwin
+  kernel, Apple libc, APFS — reproduced the x86-produced golden vector
+  byte-for-byte and passed all four verifier checks
+  (`.github/workflows/cross-machine-replay.yml`, run #1). The workflow
+  runs on every push to this branch, making cross-hardware replay a
+  standing drift gate rather than a one-time result.
+- [ ] Long-chain soak (10³+ epochs) — the remaining Gate 2 item.
