@@ -1,0 +1,16 @@
+{
+  "name": "blitz-clutch-prototype",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Minimum playable proof for the QS experience runtime contract: audio-driven reaction game with an A/B experience-mode toggle.",
+  "type": "module",
+  "engines": {
+    "node": ">=18.3"
+  },
+  "scripts": {
+    "play": "node src/game.js",
+    "play:experience": "node src/game.js --experience-mode",
+    "play:blind": "node src/game.js --blind",
+    "plan": "node src/game.js --dry-run"
+  }
+}
