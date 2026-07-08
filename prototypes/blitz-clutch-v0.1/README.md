@@ -37,6 +37,28 @@ With `--audio`, playback is attempted via `afplay`/`aplay`/`ffplay`/`play`
 if one is installed; without a player the cues still follow the audio's
 onset times (silent run).
 
+## Running the human evaluation (QSO-PROJECT-002 Variant C)
+
+The trial runner enforces the sealed-blind ordering so telemetry can't
+contaminate perception:
+
+```sh
+node src/trial.js        # runs one blind session, then prompts the
+                         # capture form immediately — answer from
+                         # immediate impression, before opening any file
+# ...repeat several times...
+node src/reveal.js       # unseals ONLY sessions that have a completed
+                         # capture form; prints guess accuracy and
+                         # per-variant score means
+```
+
+`reveal.js` never prints the variant of a session without a capture
+form. The L3 dataset is the committed pair of `results/session-*.json`
+and `results/capture-*.json` files from a real human run — nothing
+machine-generated may be committed there. `results/` is gitignored to
+keep test junk out; commit a real dataset deliberately with
+`git add -f results/`.
+
 ## Telemetry
 
 Each session writes `results/session-<timestamp>.json` with per-event

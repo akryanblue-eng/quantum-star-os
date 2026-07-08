@@ -11,6 +11,8 @@
     "play": "node src/game.js",
     "play:experience": "node src/game.js --experience-mode",
     "play:blind": "node src/game.js --blind",
+    "trial": "node src/trial.js",
+    "reveal": "node src/reveal.js",
     "plan": "node src/game.js --dry-run"
   }
 }
